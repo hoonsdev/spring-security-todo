@@ -2,10 +2,7 @@ package sesac.springsecuritytodo.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import sesac.springsecuritytodo.dto.ResponseDTO;
 import sesac.springsecuritytodo.dto.TodoDTO;
 import sesac.springsecuritytodo.entity.TodoEntity;
@@ -21,8 +18,7 @@ import java.util.List;
 // - 요청 주소가 어노테이션에 입력된 값과 일치하면 해당 클래스/메소드 실행되는 어노테이션
 // - 클래스 단위에서 사용하면 하위 메소드에 모두 적용!
 public class TodoController {
-  @Autowired
-  private TodoService todoService;
+  @Autowired private TodoService todoService;
 
   @PostMapping
   public ResponseEntity<?> createTodo(@RequestBody TodoDTO dto) {
@@ -66,5 +62,26 @@ public class TodoController {
 
       return ResponseEntity.badRequest().body(res);
     }
+  }
+
+  @GetMapping
+  public ResponseEntity<?> retrieveTodoList() {
+    String temporaryUserId = "temp-user"; // 임시 유저
+
+    // (1) 서비스 계층의 retrieve() 사용해서 투두 리스트 가져오기
+    List<TodoEntity> entities = todoService.retrieve(temporaryUserId);
+
+    // (2) 리턴된 엔티티 리스트를 TodoDTO 배열로 변환
+    List<TodoDTO> dtos = new ArrayList<>();
+    for (TodoEntity tEntity : entities) {
+      TodoDTO tDto = new TodoDTO(tEntity);
+      dtos.add(tDto);
+    }
+
+    // (3) 변환된 TodoDTO 리스트를 이용해서 ResponseDTO 를 초기화
+    ResponseDTO<TodoDTO> res = ResponseDTO.<TodoDTO>builder().data(dtos).build();
+
+    // (4) ResponseDTO 리턴
+    return ResponseEntity.ok().body(res);
   }
 }
