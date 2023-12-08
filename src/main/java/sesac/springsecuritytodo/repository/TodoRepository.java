@@ -4,6 +4,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import sesac.springsecuritytodo.entity.TodoEntity;
 
+import java.util.List;
+
 // TodoRepository 인터페이스
 // - JpaRepository 인터페이스를 확장
 // - JpaRepository<TodoEntity, Long>
@@ -11,5 +13,5 @@ import sesac.springsecuritytodo.entity.TodoEntity;
 //    - Long: 엔티티의 pk 타입
 @Repository
 public interface TodoRepository extends JpaRepository<TodoEntity, Long> {
-
+  List<TodoEntity> findByUserId(String userId);
 }
