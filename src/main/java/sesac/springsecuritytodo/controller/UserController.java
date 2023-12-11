@@ -3,6 +3,8 @@ package sesac.springsecuritytodo.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +23,9 @@ public class UserController {
   // [after] jwt 적용
   @Autowired TokenProvider tokenProvider;
 
+  // [after] 패스워드 암호화 적용
+  private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
   @PostMapping("/signup")
   public ResponseEntity<?> registerUser(@RequestBody UserDTO dto) {
     try {
@@ -29,7 +34,7 @@ public class UserController {
           UserEntity.builder()
               .email(dto.getEmail())
               .username(dto.getUsername())
-              .password(dto.getPassword())
+              .password(passwordEncoder.encode(dto.getPassword())) // 비밀번호 암호화
               .build();
 
       // 서비스를 이용해서 레포지터리에 사용자 저장
@@ -52,7 +57,8 @@ public class UserController {
 
   @PostMapping("/signin")
   public ResponseEntity<?> loginUser(@RequestBody UserDTO dto) {
-    UserEntity user = service.getByCredential(dto.getEmail(), dto.getPassword());
+    //    UserEntity user = service.getByCredential(dto.getEmail(), dto.getPassword());
+    UserEntity user = service.getByCredential(dto.getEmail(), dto.getPassword(), passwordEncoder);
 
     if (user != null) {
       // 이메일, 비번으로 찾은 유저 있음 = 로그인 성공
