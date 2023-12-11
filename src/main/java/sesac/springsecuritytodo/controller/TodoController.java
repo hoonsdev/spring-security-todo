@@ -2,6 +2,7 @@ package sesac.springsecuritytodo.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sesac.springsecuritytodo.dto.ResponseDTO;
 import sesac.springsecuritytodo.dto.TodoDTO;
@@ -21,9 +22,12 @@ public class TodoController {
   @Autowired private TodoService todoService;
 
   @PostMapping
-  public ResponseEntity<?> createTodo(@RequestBody TodoDTO dto) {
+  public ResponseEntity<?> createTodo(
+      @AuthenticationPrincipal String userId, @RequestBody TodoDTO dto) {
     try {
-      String temporaryUserId = "temp-user"; // 임시 유저
+      // @AuthenticationPrincipal
+      // - 해당 어노테이션이 붙어 있으므로 스프링이 로그인한 userId를 찾을 수 있다!
+      //      String temporaryUserId = "temp-user"; // 임시 유저
 
       // (1) DTO -> Entity
       TodoEntity entity = TodoDTO.toEntity(dto);
@@ -32,7 +36,8 @@ public class TodoController {
       entity.setId(null);
 
       // (3) 유저 설정
-      entity.setUserId(temporaryUserId); // 아직은 user api 개발하지 않았으므로 임시 유저 하드코딩
+      //      entity.setUserId(temporaryUserId); // 아직은 user api 개발하지 않았으므로 임시 유저 하드코딩
+      entity.setUserId(userId); // 로그인한 유저 아이디로 설정 ("지금 만드는 투두는 이 userId가 생성한 투두")
 
       // (4) 서비스 계층을 이용해서 투두 엔티티 생성
       List<TodoEntity> entities = todoService.create(entity);
@@ -65,11 +70,12 @@ public class TodoController {
   }
 
   @GetMapping
-  public ResponseEntity<?> retrieveTodoList() {
-    String temporaryUserId = "temp-user"; // 임시 유저
+  public ResponseEntity<?> retrieveTodoList(@AuthenticationPrincipal String userId) {
+    //    String temporaryUserId = "temp-user"; // 임시 유저
 
     // (1) 서비스 계층의 retrieve() 사용해서 투두 리스트 가져오기
-    List<TodoEntity> entities = todoService.retrieve(temporaryUserId);
+    //    List<TodoEntity> entities = todoService.retrieve(temporaryUserId);
+    List<TodoEntity> entities = todoService.retrieve(userId);
 
     // (2) 리턴된 엔티티 리스트를 TodoDTO 배열로 변환
     List<TodoDTO> dtos = new ArrayList<>();
